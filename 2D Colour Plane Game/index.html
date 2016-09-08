@@ -1,0 +1,662 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="mobile-web-app-capable" content="yes">
+
+	<title>Colour Plane</title>
+
+	
+
+	<style>
+	canvas {
+		display: block;
+		position: absolute;
+		margin: auto;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+	}
+	</style>
+</head>
+<body>
+
+	<script>
+
+	var 
+
+	canvas,
+	ctx,
+	width,
+	height,
+	images, 
+
+	bottomPos=0,
+	frames =0,
+	score=0,
+	highscore = localStorage.getItem("highscore") || 0,
+
+	currentstate,
+	states = {
+		Splash: 0, Game: 1, Score: 2
+	},
+
+
+	colour = {
+		red: 1,
+		blue: 2,
+		green: 3,
+		yellow: 4
+	},
+	currentColour=colour.red,
+	colourChoice1,
+	colourChoice2,
+	colourChoice3,
+
+	plane = {
+
+		x: 80,
+		y: 250,
+		frame: 0,
+		velocity: 0,
+		radius: 12,
+		gravity: 0.25,
+		_jump: 4.6,
+
+		jump: function(){
+			this.velocity = - this._jump;
+		},
+
+		update: function() {
+			if(currentstate === states.Splash){
+				this.y = 5*Math.sin(frames/10)
+				this.rotation=0;
+			} else{
+				this.velocity +=this.gravity;
+				this.y += this.velocity;
+				if(this.y >= 209){
+					this.y = 210;	
+					if(currentstate === states.Game){
+						currentstate = states.Score
+					}
+					this.velocity = this._jump;
+				}
+			}
+
+		},
+		draw: function(ctx) {
+			ctx.save();
+			ctx.translate(this.x, this.y);
+
+			 if(currentColour === colour.red){
+			 	ctx.drawImage(images.redPlane,80,250);
+			 }
+			 else if(currentColour === colour.green){
+			 	ctx.drawImage(images.greenPlane,80,250);
+			 }
+			 else if(currentColour === colour.yellow){
+			 	ctx.drawImage(images.yellowPlane,80,250);
+			 }
+			 else if(currentColour === colour.blue){
+			 	ctx.drawImage(images.bluePlane,80,250);
+			 }
+
+			 ctx.restore();
+			}
+
+		},
+
+		pipes = {
+			_pipes: [],
+
+			reset: function(){
+				this._pipes=[];
+			},
+
+			update: function() {
+				if(frames % 175 === 0){
+
+					var _y = getRandomInt(-400,-100);
+
+               // console.log(_y); 
+               if(pipeChanger<1400){
+               	var randomColourPipe = getRandomInt(1,4);
+               	var oppsitePipeColour;
+               	var middleColour;
+               	do{
+               		oppsitePipeColour = getRandomInt(1,4);
+                	//console.log(oppsitePipeColour +"   "+ randomColourPipe);
+                }while(randomColourPipe===oppsitePipeColour);
+
+                do{
+                	middleColour = getRandomInt(1,4);
+                	//console.log(oppsitePipeColour +"   "+ randomColourPipe);
+                }while(randomColourPipe===middleColour  || middleColour===oppsitePipeColour); 
+                this._pipes.push({
+                	x: 1400,
+                	y: _y,
+                	width: 66,
+                	height: 500,
+                	colour: randomColourPipe,
+                	oppositeColour: oppsitePipeColour,
+                	middleColour: middleColour
+                })
+            }
+        }
+
+        for(var i = 0, len = this._pipes.length; i < len; i++){
+        	var p = this._pipes[i];
+
+        	if(score>0){
+        		if(i ===1){
+        			colourChoice1=p.colour;
+        			colourChoice2=p.oppositeColour;
+        		}
+        	}
+
+        	if(i === 0){
+        		score += p.x-66 === plane.x ? 1 : 0;
+
+				var topPipe =p.height+p.y;
+				var bottomPipe = topPipe;
+				
+				var topPlane=plane.y+270;
+				var bottomPlane= topPlane+32;
+				var frontPlane= plane.x+20;
+
+				if(score<1){
+					colourChoice1=p.colour;
+					colourChoice2=p.oppositeColour;
+				}
+				
+				if(plane.x>p.x-132 && frontPlane<p.x && topPlane<topPipe && bottomPlane<topPipe+32  && currentColour != p.colour){
+					currentstate = states.Score;
+				}
+
+				if(plane.x>p.x-132 && frontPlane<p.x && bottomPlane>bottomPipe && topPlane>bottomPipe-32 && currentColour != p.oppositeColour){
+					currentstate = states.Score;
+				}
+			}
+
+			p.x-=2.5;
+			if(p.x < -150){
+				this._pipes.splice(i,1);
+				i--;
+				len--;
+			}
+		}
+
+	},
+
+	draw: function(ctx) {
+
+		for(var i = 0, len = this._pipes.length; i < len; i++){
+			var p = this._pipes[i];
+
+			if(p.colour === colour.red){
+				ctx.drawImage(images.redPipeUp, p.x,p.y);
+			}
+			else if(p.colour === colour.green){
+				ctx.drawImage(images.greenPipeUp, p.x,p.y);
+			}
+			else if(p.colour === colour.yellow){
+				ctx.drawImage(images.yellowPipeUp, p.x,p.y);
+			}
+			else if(p.colour === colour.blue){
+				ctx.drawImage(images.bluePipeUp, p.x,p.y);
+			}
+			if(p.oppositeColour === colour.red){
+				ctx.drawImage(images.redPipeDown, p.x,p.y+p.height);
+			}
+			else if(p.oppositeColour === colour.green){
+				ctx.drawImage(images.greenPipeDown, p.x,p.y+p.height);
+			}
+			else if(p.oppositeColour === colour.yellow){
+				ctx.drawImage(images.yellowPipeDown, p.x,p.y+p.height);
+			}
+			else if(p.oppositeColour === colour.blue){
+				ctx.drawImage(images.bluePipeDown, p.x,p.y+p.height);
+			}
+		}
+
+
+	}
+};
+
+
+pipes3 = {
+	_pipes3: [],
+
+	reset: function(){
+		this._pipes3=[];
+	},
+
+	update: function() {
+		if(frames % 175 === 0){
+
+			var _y = getRandomInt(-400,-300);
+
+               var randomColourPipe = getRandomInt(1,4);
+               var oppsitePipeColour;
+               var middleColour;
+               do{
+               	oppsitePipeColour = getRandomInt(1,4);
+
+                }while(randomColourPipe===oppsitePipeColour);
+
+                do{
+                	middleColour = getRandomInt(1,4);
+                
+                }while(randomColourPipe===middleColour  || middleColour===oppsitePipeColour);
+                
+                this._pipes3.push({
+                	x: 1400,
+                	y: _y,
+                	width: 66,
+                	height: 500,
+                	colour: randomColourPipe,
+                	oppositeColour: oppsitePipeColour,
+                	middleColour: middleColour
+                })
+            }
+
+            for(var i = 0, len = this._pipes3.length; i < len; i++){
+            	var p = this._pipes3[i];
+
+            	if(pipeChanger>2050){
+            		if(i ===1){
+            		colourChoice1=p.colour;
+            		colourChoice2=p.oppositeColour;
+            		colourChoice3=p.middleColour;
+            	}
+            	}
+            	
+            	if(i === 0){
+            		score += p.x-66 === plane.x ? 1 : 0;
+
+            		var low = p.y+p.height;
+
+				if(pipeChanger<2050){
+            		colourChoice1=p.colour;
+            		colourChoice2=p.oppositeColour;
+            		colourChoice3=p.middleColour;
+            	}
+
+            	var topPipe =p.height+p.y;
+            	var topMiddlePipe =topPipe;
+            	var bottomMiddlePipe = topMiddlePipe+200;
+				var bottomPipe = bottomMiddlePipe;
+				
+				var topPlane=plane.y+270;
+
+				var bottomPlane= topPlane+32;
+				var frontPlane= plane.x+20;
+
+				if(plane.x>p.x-132 && frontPlane<p.x && topPlane<topPipe && bottomPlane<topPipe+32  && currentColour != p.colour){
+					currentstate = states.Score;
+				}
+
+				if(plane.x>p.x-132 && frontPlane<p.x && bottomPlane>topMiddlePipe && bottomPlane<bottomMiddlePipe && topPlane>topMiddlePipe-32 && currentColour != p.middleColour){
+					currentstate = states.Score;
+				}
+
+				if(plane.x>p.x-132 && frontPlane<p.x && bottomPlane>bottomPipe && topPlane>bottomPipe-32 && currentColour != p.oppositeColour){
+					currentstate = states.Score;
+				}
+			}
+
+			p.x-=2.5;
+			if(p.x < -150){
+				this._pipes3.splice(i,1);
+				i--;
+				len--;
+			}
+		}
+
+	},
+
+	draw: function(ctx) {
+
+		for(var i = 0, len = this._pipes3.length; i < len; i++){
+			var p = this._pipes3[i];
+
+			if(p.colour === colour.red){
+				ctx.drawImage(images.redPipeUp, p.x,p.y);
+			}
+			else if(p.colour === colour.green){
+				ctx.drawImage(images.greenPipeUp, p.x,p.y);
+			}
+			else if(p.colour === colour.yellow){
+				ctx.drawImage(images.yellowPipeUp, p.x,p.y);
+			}
+			else if(p.colour === colour.blue){
+				ctx.drawImage(images.bluePipeUp, p.x,p.y);
+			}
+
+			if(p.middleColour === colour.red){
+				ctx.drawImage(images.redMiddle, p.x,p.y+p.height);
+			}
+			else if(p.middleColour === colour.green){
+				ctx.drawImage(images.greenMiddle, p.x,p.y+p.height);
+			}
+			else if(p.middleColour === colour.yellow){
+				ctx.drawImage(images.yellowMiddle, p.x,p.y+p.height);
+			}
+			else if(p.middleColour === colour.blue){
+				ctx.drawImage(images.blueMiddle, p.x,p.y+p.height);
+			}
+
+
+			if(p.oppositeColour === colour.red){
+				ctx.drawImage(images.redPipeDown, p.x,p.y+200+p.height);
+			}
+			else if(p.oppositeColour === colour.green){
+				ctx.drawImage(images.greenPipeDown, p.x,p.y+200+p.height);
+			}
+			else if(p.oppositeColour === colour.yellow){
+				ctx.drawImage(images.yellowPipeDown, p.x,p.y+200+p.height);
+			}
+			else if(p.oppositeColour === colour.blue){
+				ctx.drawImage(images.bluePipeDown, p.x,p.y+200+p.height);
+			}
+		} 
+	}
+};
+
+colourChange = {
+	_colourChange: [],
+
+	reset: function(){
+		this._colourChange=[];
+	},
+
+	update: function() {
+		if(frames % 175 === 0){
+			var _y = 300*Math.random();
+			this._colourChange.push({
+				x: 1200,
+				y: _y,
+				width: 67,
+				height: 52
+			})
+		}
+
+		for(var i = 0, len = this._colourChange.length; i < len; i++){
+			var c = this._colourChange[i];
+
+			if(i === 0){
+
+
+				var bottomSide = c.y+c.height;
+				var rightSide = c.x-132;
+				var leftSide = c.x + 2;
+				var topSide = c.y;
+				
+				var topPlane=plane.y+265;
+
+				var bottomPlane= topPlane+32;
+				var frontPlane= plane.x+20;
+
+				var hit =0;
+
+						if(plane.x>rightSide && frontPlane<leftSide && topPlane>topSide-32 && bottomPlane>topSide && bottomPlane<bottomSide){
+							hit=1;	
+						}
+						if(plane.x>rightSide && frontPlane<leftSide && topPlane<bottomSide && bottomPlane<bottomSide+32 && topPlane>topSide){
+							hit=1;
+						}
+
+						if(hit===1){
+						score++;
+						
+						this._colourChange.splice(i,1);
+						i--;
+						len--;
+						var switchColour = getRandomInt(1,2,3);
+						switch (switchColour) {
+
+							case 1:
+							currentColour=colourChoice1;
+							break;
+
+							case 2:
+							currentColour=colourChoice2;
+							break;
+							case 3:
+							currentColour=colourChoice3;
+							break;
+
+						}
+
+
+					}
+			}
+
+
+			c.x-=2.5;
+			if(c.x < -150){
+				this._colourChange.splice(i,1);
+				i--;
+				len--;
+			}
+		}
+
+	},
+	draw: function(ctx) {
+
+		for(var i = 0, len = this._colourChange.length; i < len; i++){
+			var c = this._colourChange[i];
+			ctx.drawImage(images.colourChange, c.x,c.y);  
+		}
+	}
+
+};
+
+function getRandomInt(min, max) {
+	return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function onpress(evt) {
+	switch (currentstate) {
+	
+		case states.Splash:
+		var mx = evt.offsetX, my = evt.offsetY;
+			if (mx == null || my == null) {
+				mx = evt.touches[0].clientX;
+				my = evt.touches[0].clientY;
+			}
+			if (mx>425 && mx < 681 && my > 250 && my < 367) {
+				currentstate = states.Game;
+				plane.jump();
+			}
+		
+		break;
+		case states.Game:
+
+		plane.jump();
+		break;
+		case states.Score:
+
+			var mx = evt.offsetX, my = evt.offsetY;
+			if (mx == null || my == null) {
+				mx = evt.touches[0].clientX;
+				my = evt.touches[0].clientY;
+			}
+			
+			if (mx>460 && mx < 644 && my > 320 && my < 403) {
+				pipes.reset();
+				pipes3.reset();
+				colourChange.reset();
+				currentstate = states.Splash;
+				score = 0;
+				pipeChanger=0;
+				currentColour=colour.red;
+			}
+			break;
+		}
+	}
+var planeSound,music;
+
+function main() {
+	canvas = document.createElement("canvas");
+	width = 1125;
+	height =549;
+	
+
+	canvas.style.border = "1px solid #000";
+	planeSound = new Audio("propeller-plane-flying-steady-01.mp3");
+	
+	music = new Audio("Tension-music-loop-114-bpm.mp3");
+
+	
+	document.addEventListener("mousedown", onpress);
+
+	canvas.width = width;
+	canvas.height = height;
+	ctx = canvas.getContext("2d");
+	
+	currentstate = states.Splash;
+
+	document.body.appendChild(canvas);
+	run();
+}
+
+function run() {
+	var loop = function() {
+		update();
+		render();
+		window.requestAnimationFrame(loop, canvas);
+	}
+	window.requestAnimationFrame(loop, canvas);
+	
+}
+var pipeChanger=0;
+function update() {
+	frames++;
+	
+	if(currentstate !== states.Score){
+		bottomPos = (bottomPos-2.5)%1000;
+	} else {
+		
+		planeSound.pause();
+		highscore = Math.max(highscore, score);
+		localStorage.setItem("highscore", highscore);
+
+
+	}
+	
+	if(currentstate === states.Game){
+		planeSound.play();
+		pipeChanger++
+	
+		if(pipeChanger>1400){
+			pipes3.update();
+		}
+		if(pipeChanger<2200){
+			pipes.update();
+		}
+		colourChange.update();
+	}
+	music.play();
+	plane.update();
+
+	
+	
+}
+function render() {
+	loadImages(sources, function(images) {
+		ctx.drawImage(images.Background, 0,0);
+
+
+		if(pipeChanger>1400){
+			pipes3.draw(ctx);
+		}
+		if(pipeChanger<2200){
+			pipes.draw(ctx);
+		}
+
+		colourChange.draw(ctx);
+		plane.draw(ctx);
+
+		ctx.drawImage(images.Bottom, bottomPos,501);
+		ctx.drawImage(images.Bottom, bottomPos+1000,501);
+
+        if(currentstate === states.Splash){
+        	ctx.drawImage(images.startButton, 425,250);
+        	ctx.drawImage(images.title, 150,100);
+        }
+
+        if(currentstate === states.Score){
+        	ctx.drawImage(images.scoreBoard, 200,30);
+        	ctx.drawImage(images.okButton, 460,320);
+        	ctx.drawImage(images.gameOver, 250,50);
+        	ctx.font = "29px Impact";
+	        ctx.textBaseline = "top";
+	        ctx.fillText("Score: " + score, 495, 250);
+	        ctx.fillText("Highscore: " + highscore, 470, 190);
+        }
+
+        if(currentstate === states.Game){
+	        ctx.font = "18px Impact";
+	        ctx.textBaseline = "top";
+	        ctx.fillText("Score: " + score, 20, 20);
+        }
+
+        
+    });
+}
+
+function loadImages(sources, callback) {
+	images = {};
+	var loadedImages = 0;
+	var numImages = 0;
+  
+        for(var src in sources) {
+        	numImages++;
+        }
+        for(var src in sources) {
+        	images[src] = new Image();
+        	images[src].onload = function() {
+        		if(++loadedImages >= numImages) {
+        			callback(images);
+        		}
+        	};
+        	images[src].src = sources[src];
+        }
+    }
+
+    var sources = {
+    	Background: 'res/Background.png',
+    	redPlane: 'res/redPlane.png',
+    	redPipeUp: 'res/redPipeUp.png',
+    	redPipeDown: 'res/redPipeDown.png',
+    	redPipeDown: 'res/redPipeDown.png',
+    	redMiddle: 'res/redMiddle.png',
+    	greenPipeDown: 'res/greenPipeDown.png',
+    	greenPipeUp: 'res/greenPipeUp.png',
+    	greenMiddle: 'res/greenMiddle.png',
+    	yellowPipeDown: 'res/yellowPipeDown.png',
+    	yellowPipeUp: 'res/yellowPipeUp.png',
+    	yellowMiddle: 'res/yellowMiddle.png',
+    	bluePipeDown: 'res/bluePipeDown.png',
+    	bluePipeUp: 'res/bluePipeUp.png',
+    	blueMiddle: 'res/blueMiddle.png',
+    	greenPlane: 'res/greenPlane.png',
+    	bluePlane: 'res/bluePlane.png',
+    	yellowPlane: 'res/yellowPlane.png',
+    	colourChange: 'res/colourChange.png',
+    	startButton: 'res/startButton.png',
+    	title: 'res/title.png',
+    	okButton: 'res/okButton.png',
+    	gameOver: 'res/gameOver.png',
+    	scoreBoard: 'res/scoreBoard.png',
+    	Bottom: 'res/Bottom.png'
+    };
+    main();
+    </script>
+</body>
+</html>

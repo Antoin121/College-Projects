@@ -1,0 +1,212 @@
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<title>Smooth Travels</title>
+
+		<meta charset="utf-8" />
+		<meta name="format-detection" content="telephone=no" />
+		<meta name="msapplication-tap-highlight" content="no" />
+		<!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+		<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+
+
+		
+		<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="jquery.mobile-1.1.0.min.js"></script>
+		<script type="text/javascript" src="tracker.js"></script> 
+		<script type="text/javascript" src="cordova.js"></script>
+		<script type="text/javascript" src="js/index.js"></script>
+		<script src='https://maps.googleapis.com/maps/api/js?v=3.exp'></script>
+		<link rel="stylesheet" href="jquery.mobile-1.1.0.min.css" />
+		<link rel="stylesheet" href="css/style.css" />
+
+
+
+	</head>
+	<body onload="onBodyLoad()">
+		<div data-role="page" id="home">
+
+			<div data-role="header">
+
+				<h1>Home</h1>
+
+				<div data-role="navbar">
+					<ul>
+						<li><a href="#home" onclick="goQuery()" data-transition="none" data-icon="home">Home</a></li>
+						<li><a href="#startTracking" data-transition="none" data-icon="plus">Track Journey</a></li>
+						<li><a href="#history" onclick="goQueryHistory()" data-transition="none" data-icon="star">History</a></li>
+					</ul>
+				</div>
+			</div>
+
+			<div data-role="content">
+				<p>Welcome to the <em>Smooth Travels</em> app. By clicking <em>Track Journey</em> you can record your journeys using the GPS feature on your phone and upload them to be analyzed for potholes.</p>
+
+			
+
+				<div data-role="popup" id="qrpopup" data-theme="a" class="ui-corner-all">
+				
+					<div style="padding:10px 20px;">
+				
+				<input type="text" name="editNameBox" id="editNameBox" data-theme="a"><br>
+				<a href="#viewJourney" data-role="button" onclick="goMapping()"> View Journey</a>
+				<button onclick="goDelete()" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Delete Journey</button>
+				<button onclick="goEdit()" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Edit</button>
+				<button onclick="document.getElementById('qrpopup').style.display='none';" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Back</button>
+				</div>
+				
+			</div>
+
+			<div data-role="content">
+				<div id="tblDiv" ></div>
+				<br>
+				<button data-role="button" id="upload">Upload</button>
+			</div>
+
+
+			</div>
+
+			
+
+		</div>
+
+
+
+		<div data-role="page" id="startTracking">
+
+			<div data-role="header">
+				<h1>Track Journey</h1>
+
+				<div data-role="navbar">
+					<ul>
+						<li><a href="#home" onclick="goQuery()" data-transition="none" data-icon="home">Home</a></li>
+						<li><a href="#startTracking" data-transition="none" data-icon="plus">Track Journey</a></li>
+						<li><a href="#history" onclick="goQueryHistory()" data-transition="none" data-icon="star">History</a></li>
+					</ul>
+				</div>
+			</div>
+
+			<div data-role="content"> 
+				<p id="startTracking_status"></p>
+				<div data-role="fieldcontain" class="ui-hide-label">
+					<label for="track_id">Track ID/Name:</label>
+					<input type="text" name="track_id" id="track_id" placeholder="Workout ID/Name"/>
+				</div>
+
+				<button data-role="button" id="startTracking_start">Start Tracking</button>
+				<button data-role="button" id="stopTracking">Stop Tracking</button>  
+
+				<p id="startTracking_debug"></p>
+
+			</div>
+			 
+
+		</div>
+
+
+
+		<div data-role="page" id="history">
+
+			<div data-role="header">
+				<h1>History</h1>
+
+				<div data-role="navbar">
+					<ul>
+						<li><a href="#home" onclick="goQuery()" data-transition="none" data-icon="home">Home</a></li>
+						<li><a href="#startTracking" data-transition="none" data-icon="plus">Track Journey</a></li>
+						<li><a href="#history" onclick="goQueryHistory()" data-transition="none" data-icon="star">History</a></li>
+					</ul>
+				</div>
+			</div>
+			
+			
+
+			<div data-role="popup" id="qrpopup3" data-theme="a" class="ui-corner-all">
+				
+					<div style="padding:10px 20px;">
+				
+				<input type="text" name="editNameBox2" id="editNameBox2" data-theme="a"><br>
+				<a href="#viewJourneyHistory" data-role="button" onclick="goDownload()"> View Journey</a>
+				<button onclick="goDeleteHistory()" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Delete Journey</button>
+				<button onclick="document.getElementById('qrpopup3').style.display='none';" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Back</button>
+				</div>
+
+	</div>
+			<div data-role="content">
+				<div id="tblDiv2" ></div>
+			</div>
+
+
+		</div>
+
+		
+
+		<div data-role="page" id="viewJourney">
+
+			<div data-role="header">
+				<h1>Map of Journey</h1>
+
+				<div data-role="navbar">
+					<ul>
+						<li><a href="#home" onclick="goQuery()" data-transition="none" data-icon="home">Home</a></li>
+						<li><a href="#startTracking" data-transition="none" data-icon="plus">Track Journey</a></li>
+						<li><a href="#history" onclick="goQueryHistory()" data-transition="none" data-icon="star">History</a></li>
+					</ul>
+				</div>
+			</div>
+
+			<div data-role="content"> 
+				
+				<div data-role="popup" id="avgSpeedBox" data-theme="b" class="ui-corner-all">
+					<div style="padding:5px 10px;">
+						<font color="red" id="avgSpeed"></font>
+					</div>
+			</div>
+			<div data-role="popup" id="distanceBox" data-theme="b" class="ui-corner-all">
+					<div style="padding:5px 10px;">
+						<font color="red" id="distanceTextbox"></font>
+					</div>
+			</div>
+			<div data-role="popup" id="popupComment" data-theme="a" class="ui-corner-all">
+				<form>
+					<div style="padding:10px 20px;">
+						<h3 style="color:red;">Please add comment</h3>
+						<label for="un" class="ui-hidden-accessible">Comment:</label>
+						<input type="text" name="comment" id="comment" value="" placeholder="Comment" data-theme="a">
+						<button onclick="goCommenting()" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Add Comment</button>
+						<button onclick="document.getElementById('popupComment').style.display='none'; event.preventDefault();" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Back</button>
+					</div>
+				</form>
+			</div>
+
+			<div id="map_canvas" style="position:absolute;top:150px;left:0;width:100%;height:63%;"></div>
+			<br>
+			<button  id="commentButton" >Add Comment</button>
+
+			</div>
+
+		</div>
+		
+		<div data-role="page" id="viewJourneyHistory">
+
+			<div data-role="header">
+				<h1>Map of Journey</h1>
+
+				<div data-role="navbar">
+					<ul>
+						<li><a href="#home" onclick="goQuery()" data-transition="none" data-icon="home">Home</a></li>
+						<li><a href="#startTracking" data-transition="none" data-icon="plus">Track Journey</a></li>
+						<li><a href="#history" onclick="goQueryHistory()" data-transition="none" data-icon="star">History</a></li>
+					</ul>
+				</div>
+			</div>
+
+			<div data-role="content"> 
+				
+
+			<div id="map_canvas2" style="position:absolute;top:97px;left:0;width:100%;height:83%;"></div>
+			</div>
+		</div>
+		
+	</body>
+	</html>
